@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: job_search_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: job_search_db
+      MYSQL_USER: jobuser
+      MYSQL_PASSWORD: jobpass123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - job-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: job_search_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    ports:
+      - "9003:80"
+    depends_on:
+      - mysql
+    networks:
+      - job-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: job_search_backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/job_search_db
+      SPRING_DATASOURCE_USERNAME: jobuser
+      SPRING_DATASOURCE_PASSWORD: jobpass123
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - mysql
+    networks:
+      - job-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: job_search_frontend
+    ports:
+      - "8003:80"
+    volumes:
+      - ./backend/uploads:/usr/share/nginx/html/uploads
+    depends_on:
+      - backend
+    networks:
+      - job-network
+
+volumes:
+  mysql_data:
+
+networks:
+  job-network:
+    driver: bridge
