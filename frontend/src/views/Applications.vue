@@ -71,7 +71,7 @@
                   <!-- Vulnerable: No authorization check -->
                   <button 
                     class="btn btn-success btn-sm" 
-                    @click="updateStatus(application.id)"
+                    @click="updateStatus(application.id, 'accepted')"
                     :disabled="application.status === 'accepted'"
                   >
                     Accept
@@ -79,7 +79,7 @@
                   
                   <button 
                     class="btn btn-danger btn-sm" 
-                    @click="updateStatus(application.id)"
+                    @click="updateStatus(application.id, 'rejected')"
                     :disabled="application.status === 'rejected'"
                   >
                     Reject
@@ -87,7 +87,7 @@
                   
                   <button 
                     class="btn btn-info btn-sm" 
-                    @click="updateStatus(application.id)"
+                    @click="updateStatus(application.id, 'reviewed')"
                     :disabled="application.status === 'reviewed'"
                   >
                     Mark as Reviewed
@@ -203,41 +203,18 @@ export default {
       }
     },
     
-    // async updateStatus(applicationId, status) {
-    //   try {
-    //     // Vulnerable: No authorization check
-    //     const response = await this.$http.put(`/api/applications/${applicationId}`, { status })
-        
-    //     if (response.data.success) {
-    //       this.success = `Application ${status} successfully!`
-          
-    //       // Update local status
-    //       const application = this.applications.find(app => app.id === applicationId)
-    //       if (application) {
-    //         application.status = status
-    //       }
-          
-    //       setTimeout(() => {
-    //         this.success = null
-    //       }, 3000)
-    //     } else {
-    //       this.error = response.data.message
-    //     }
-    //   } catch (error) {
-    //     this.error = 'Failed to update application status'
-    //   }
-    // },
-
-    async updateStatus(applicationId) {
+    async updateStatus(applicationId, status) {
       try {
         // Vulnerable: No authorization check
-        const response = await this.$http.post(`/api/applications/${applicationId}`)
+        const response = await this.$http.put(`/api/applications/${applicationId}`, { status })
         
         if (response.data.success) {
+          this.success = `Application ${status} successfully!`
+          
           // Update local status
           const application = this.applications.find(app => app.id === applicationId)
           if (application) {
-            application.status = response.data.status
+            application.status = status
           }
           
           setTimeout(() => {
@@ -250,6 +227,29 @@ export default {
         this.error = 'Failed to update application status'
       }
     },
+
+    // async updateStatus(applicationId) {
+    //   try {
+    //     // Vulnerable: No authorization check
+    //     const response = await this.$http.post(`/api/applications/${applicationId}`)
+        
+    //     if (response.data.success) {
+    //       // Update local status
+    //       const application = this.applications.find(app => app.id === applicationId)
+    //       if (application) {
+    //         application.status = response.data.status
+    //       }
+          
+    //       setTimeout(() => {
+    //         this.success = null
+    //       }, 3000)
+    //     } else {
+    //       this.error = response.data.message
+    //     }
+    //   } catch (error) {
+    //     this.error = 'Failed to update application status'
+    //   }
+    // },
     
     async viewProfile(userId) {
       try {
