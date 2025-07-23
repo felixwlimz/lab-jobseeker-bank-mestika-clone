@@ -61,7 +61,7 @@
                 <div class="d-grid gap-2">
                   <button 
                     class="btn btn-success btn-sm" 
-                    @click="updateStatus(application.id, 'accepted')"
+                    @click="updateStatus(application.id)"
                     :disabled="application.status === 'accepted'"
                   >
                     Accept
@@ -69,7 +69,7 @@
                   
                   <button 
                     class="btn btn-danger btn-sm" 
-                    @click="updateStatus(application.id, 'rejected')"
+                    @click="updateStatus(application.id)"
                     :disabled="application.status === 'rejected'"
                   >
                     Reject
@@ -77,7 +77,7 @@
                   
                   <button 
                     class="btn btn-info btn-sm" 
-                    @click="updateStatus(application.id, 'reviewed')"
+                    @click="updateStatus(application.id)"
                     :disabled="application.status === 'reviewed'"
                   >
                     Mark as Reviewed
@@ -122,8 +122,10 @@
                   @error="$event.target.src='/default-avatar.png'"
                 >
                 <!-- Name with XSS vulnerability -->
-                <h5 v-html="selectedApplication.applicantName"></h5>
-                <p class="text-muted" v-html="selectedApplication.applicantEmail"></p>
+                <!-- <h5 v-html="selectedApplication.applicantName"></h5> -->
+                <h5>{{ selectedApplication.applicantName }}</h5>
+                <!-- <p class="text-muted" v-html="selectedApplication.applicantEmail"></p> -->
+                <p class="text-muted">{{ selectedApplication.applicantEmail }}</p>
                 
                 <!-- CV Download -->
                 <div v-if="selectedApplication.cvFile" class="mt-3">
@@ -138,9 +140,11 @@
                   <div class="col-md-6">
                     <h6>Application Information</h6>
                     <!-- Job title with XSS vulnerability -->
-                    <p><strong>Job:</strong> <span v-html="selectedApplication.jobTitle"></span></p>
+                    <!-- <p><strong>Job:</strong> <span v-html="selectedApplication.jobTitle"></span></p> -->
+                    <p><strong>Job:</strong> <span>{{ selectedApplication.jobTitle }}</span></p>
                     <p><strong>Applied:</strong> {{ formatDate(selectedApplication.appliedAt) }}</p>
-                    <p><strong>Phone:</strong> <span v-html="selectedApplication.applicantPhone || 'Not provided'"></span></p>
+                    <!-- <p><strong>Phone:</strong> <span v-html="selectedApplication.applicantPhone || 'Not provided'"></span></p> -->
+                    <p><strong>Phone:</strong> <span>{{ selectedApplication.applicantPhone || 'Not provided' }}</span></p>
                     <p><strong>Status:</strong> 
                       <span class="badge" :class="getStatusClass(selectedApplication.status)">
                         {{ selectedApplication.status }}
@@ -152,7 +156,8 @@
                 <!-- Cover Letter with XSS vulnerability -->
                 <div v-if="selectedApplication.coverLetter" class="mt-3">
                   <h6>Cover Letter</h6>
-                  <div class="border p-3 bg-light" v-html="selectedApplication.coverLetter"></div>
+                  <!-- <div class="border p-3 bg-light" v-html="selectedApplication.coverLetter"></div> -->
+                  <div class="border p-3 bg-light" >{{selectedApplication.coverLetter}}</div>
                 </div>
                 
                 <!-- Skills Section with XSS vulnerability -->
@@ -163,7 +168,8 @@
                       <div class="card">
                         <div class="card-body p-2">
                           <!-- Skill name with XSS vulnerability -->
-                          <strong v-html="skill.skillName"></strong>
+                          <!-- <strong v-html="skill.skillName"></strong> -->
+                          <strong>{{ skill.skillName }}</strong>
                           <span class="badge bg-secondary ms-2">{{ skill.level }}</span>
                         </div>
                       </div>
@@ -177,14 +183,17 @@
                   <div v-for="edu in selectedApplication.education" :key="edu.id" class="card mb-2">
                     <div class="card-body p-3">
                       <!-- Institution with XSS vulnerability -->
-                      <h6 class="mb-1" v-html="edu.institution"></h6>
+                      <!-- <h6 class="mb-1" v-html="edu.institution"></h6> -->
+                      <h6 class="mb-1">{{ edu.institution }}</h6>
                       <!-- Degree and field with XSS vulnerability -->
-                      <p class="mb-1 text-muted" v-html="edu.degree + (edu.fieldOfStudy ? ' - ' + edu.fieldOfStudy : '')"></p>
+                      <!-- <p class="mb-1 text-muted" v-html="edu.degree + (edu.fieldOfStudy ? ' - ' + edu.fieldOfStudy : '')"></p> -->
+                      <p class="mb-1 text-muted">{{ edu.degree + (edu.fieldOfStudy ? ' - ' + edu.fieldOfStudy : '') }}</p>
                       <small class="text-muted">
                         {{ formatDate(edu.startDate) }} - {{ edu.endDate ? formatDate(edu.endDate) : 'Present' }}
                       </small>
                       <!-- Description with XSS vulnerability -->
-                      <p class="mt-2 mb-0" v-if="edu.description" v-html="edu.description"></p>
+                      <!-- <p class="mt-2 mb-0" v-if="edu.description" v-html="edu.description"></p> -->
+                      <p class="mt-2 mb-0" v-if="edu.description">{{ edu.description }}</p>
                     </div>
                   </div>
                 </div>
@@ -195,13 +204,16 @@
                   <div v-for="exp in selectedApplication.experience" :key="exp.id" class="card mb-2">
                     <div class="card-body p-3">
                       <!-- Company and position with XSS vulnerability -->
-                      <h6 class="mb-1" v-html="exp.company"></h6>
-                      <p class="mb-1 text-muted" v-html="exp.position"></p>
+                      <!-- <h6 class="mb-1" v-html="exp.company"></h6> -->
+                      <h6 class="mb-1">{{ exp.company }}</h6>
+                      <!-- <p class="mb-1 text-muted" v-html="exp.position"></p> -->
+                      <p class="mb-1 text-muted">{{exp.company}}</p>
                       <small class="text-muted">
                         {{ formatDate(exp.startDate) }} - {{ exp.endDate ? formatDate(exp.endDate) : 'Present' }}
                       </small>
                       <!-- Description with XSS vulnerability -->
-                      <p class="mt-2 mb-0" v-if="exp.description" v-html="exp.description"></p>
+                      <!-- <p class="mt-2 mb-0" v-if="exp.description" v-html="exp.description"></p> -->
+                      <p class="mt-2 mb-0" v-if="exp.description">{{ exp.description }}</p>
                     </div>
                   </div>
                 </div>
@@ -342,20 +354,43 @@ export default {
       }
     },
     
-    async updateStatus(applicationId, status) {
+    // async updateStatus(applicationId, status) {
+    //   try {
+    //     const response = await this.$http.put(`/api/applications/${applicationId}`, { status })
+        
+    //     if (response.data.success) {
+    //       this.success = `Application ${status} successfully!`
+          
+    //       // Update local status
+    //       const application = this.applications.find(app => app.id === applicationId)
+    //       if (application) {
+    //         application.status = status
+    //       }
+          
+    //       this.filterApplications()
+          
+    //       setTimeout(() => {
+    //         this.success = null
+    //       }, 3000)
+    //     } else {
+    //       this.error = response.data.message
+    //     }
+    //   } catch (error) {
+    //     this.error = 'Failed to update application status'
+    //   }
+    // },
+
+    async updateStatus(applicationId) {
       try {
-        const response = await this.$http.put(`/api/applications/${applicationId}`, { status })
+        // Vulnerable: No authorization check
+        const response = await this.$http.post(`/api/applications/${applicationId}`)
         
         if (response.data.success) {
-          this.success = `Application ${status} successfully!`
-          
           // Update local status
           const application = this.applications.find(app => app.id === applicationId)
           if (application) {
-            application.status = status
+            application.status = response.data.status
           }
-          
-          this.filterApplications()
           
           setTimeout(() => {
             this.success = null

@@ -42,10 +42,14 @@
             <div class="text-center mt-3">
               <p>Don't have an account? <router-link to="/register">Register here</router-link></p>
             </div>
-            
-            <!-- Vulnerable: Display error messages without sanitization -->
-            <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div>
+
+             <!-- Vulnerable: Display error messages without sanitization -->
+            <!-- <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div>
             <div v-if="success" class="alert alert-success mt-3" v-html="success"></div>
+             -->
+            <!-- Vulnerable: Display error messages without sanitization -->
+            <div v-if="error" class="alert alert-danger mt-3" >{{ error }}</div>
+            <div v-if="success" class="alert alert-success mt-3">{{  success }}</div>
           </div>
         </div>
         
@@ -80,6 +84,26 @@ export default {
     }
   },
   methods: {
+
+    validate(credentials){
+      const usernameRegex = /^[a-zA-Z][a-zA-Z0-9._]{2,15}$/;
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+       if (!credentials.username) {
+    throw new Error('Username must not be empty');
+  }
+
+  if (!usernameRegex.test(credentials.username)) {
+    throw new Error('Invalid username');
+  }
+
+  if (!credentials.password || !passwordRegex.test(credentials.password)) {
+    throw new Error('Invalid password!');
+  }
+
+
+    },
+
     async login() {
       this.loading = true
       this.error = null
@@ -87,6 +111,7 @@ export default {
       
       try {
         console.log('Sending login request...', this.credentials)
+        this.validate(this.credentials);
         const response = await this.$http.post('/api/auth/login', this.credentials)
         console.log('Login response:', response.data)
         

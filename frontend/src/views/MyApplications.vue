@@ -24,7 +24,8 @@
             <div class="row">
               <div class="col-md-8">
                 <!-- Vulnerable: XSS possible -->
-                <h5 v-html="application.jobTitle"></h5>
+                <!-- <h5 v-html="application.jobTitle"></h5> -->
+                <h5>{{ application.jobTitle }}</h5>
                 <p class="text-muted">Applied on {{ formatDate(application.appliedAt) }}</p>
                 
                 <div class="mb-2">
@@ -39,7 +40,8 @@
                 <div v-if="application.coverLetter">
                   <small class="text-muted">Cover Letter:</small>
                   <!-- Vulnerable: XSS possible -->
-                  <p class="small" v-html="application.coverLetter"></p>
+                  <!-- <p class="small" v-html="application.coverLetter"></p> -->
+                  <p class="small">{{ application.coverLetter }}</p>
                 </div>
               </div>
               
@@ -58,7 +60,8 @@
     </div>
     
     <!-- Vulnerable: Display messages without sanitization -->
-    <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div>
+    <!-- <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div> -->
+    <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
   </div>
 </template>
 

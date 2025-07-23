@@ -81,8 +81,8 @@
     </div>
     
     <!-- Vulnerable: Display messages without sanitization -->
-    <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div>
-    <div v-if="success" class="alert alert-success mt-3" v-html="success"></div>
+    <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
+    <div v-if="success" class="alert alert-success mt-3">{{ error }}</div>
   </div>
 </template>
 

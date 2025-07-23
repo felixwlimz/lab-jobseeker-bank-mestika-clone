@@ -12,8 +12,10 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     
     List<Job> findByCompanyId(Long companyId);
     
-    @Query(value = "SELECT * FROM jobs WHERE title LIKE CONCAT('%', :keyword, '%') OR description LIKE CONCAT('%', :keyword, '%')", nativeQuery = true)
+    @Query(value = "SELECT * FROM Job j WHERE j.title LIKE CONCAT('%', :keyword, '%') OR j.description LIKE CONCAT('%', :keyword, '%')")
     List<Job> searchJobs(@Param("keyword") String keyword);
     
     List<Job> findByStatus(String status);
+
+    List<Job> findByTitleContainingIgnoreCase(String keyword);
 }

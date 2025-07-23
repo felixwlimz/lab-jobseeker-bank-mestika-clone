@@ -19,6 +19,7 @@
                       id="username" 
                       v-model="user.username" 
                       required
+                      pattern="^[a-zA-Z0-9_]{3,20}$"
                     >
                   </div>
                 </div>
@@ -32,6 +33,7 @@
                       id="email" 
                       v-model="user.email" 
                       required
+                      pattern=""
                     >
                   </div>
                 </div>
@@ -48,6 +50,7 @@
                       id="password" 
                       v-model="user.password" 
                       required
+                      pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
                     >
                   </div>
                 </div>
@@ -109,6 +112,7 @@
                   id="website" 
                   v-model="user.website"
                   placeholder="https://example.com"
+                   pattern="^https:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}.*$"
                 >
               </div>
               
@@ -135,8 +139,8 @@
             </div>
             
             <!-- Vulnerable: Display messages without sanitization -->
-            <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div>
-            <div v-if="success" class="alert alert-success mt-3" v-html="success"></div>
+            <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
+            <div v-if="success" class="alert alert-success mt-3">{{ success }}</div>
           </div>
         </div>
       </div>

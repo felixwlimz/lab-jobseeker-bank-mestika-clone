@@ -5,7 +5,7 @@
         <div class="card">
           <div class="card-body">
             <!-- Vulnerable: XSS possible in job details -->
-            <h2 v-html="job.title"></h2>
+            <h2>{{ job.title }}</h2>
             <p class="text-muted">{{ job.location }} • {{ job.jobType }}</p>
             
             <div class="mb-3" v-if="job.salaryMin">
@@ -16,13 +16,13 @@
             <div class="mb-4">
               <h4>Job Description</h4>
               <!-- Vulnerable: XSS possible -->
-              <div v-html="job.description"></div>
+              <div >{{ job.description }}</div>
             </div>
             
             <div class="mb-4">
               <h4>Requirements</h4>
               <!-- Vulnerable: XSS possible -->
-              <div v-html="job.requirements"></div>
+              <div>{{  job.requirements }}</div>
             </div>
             
             <div class="mb-3">
@@ -78,10 +78,14 @@
                 </div>
               </form>
             </div>
+
+              <!-- Vulnerable: Display messages without sanitization -->
+            <!-- <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div>
+            <div v-if="success" class="alert alert-success mt-3" v-html="success"></div> -->
             
             <!-- Vulnerable: Display messages without sanitization -->
-            <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div>
-            <div v-if="success" class="alert alert-success mt-3" v-html="success"></div>
+            <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
+            <div v-if="success" class="alert alert-success mt-3" >{{  success }}</div>
           </div>
         </div>
         
@@ -90,12 +94,12 @@
           <div class="card-body">
             <h6>About the Company</h6>
             <!-- Vulnerable: XSS possible -->
-            <h5 v-html="company.companyName"></h5>
-            <p v-html="company.companyDescription"></p>
+            <h5>{{ company.companyName }}</h5>
+            <p >{{ company.companyDescription }}</p>
             
             <div v-if="company.website">
               <!-- Vulnerable: No URL validation -->
-              <a :href="company.website" target="_blank" class="btn btn-outline-primary btn-sm">
+              <a :href="validateURL(company.website)"  rel="noopener noreferrer" target="_blank" class="btn btn-outline-primary btn-sm">
                 Visit Website
               </a>
             </div>
@@ -139,6 +143,59 @@ export default {
     }
   },
   methods: {
+    
+    validateURL(url){
+      try{
+        const parsed = new URL(url)
+        if(parsed.protocol === 'https' || parsed.protocol === 'http'){
+          return url;
+        }
+      }
+      catch(e){
+        return 'Invalid URL';
+      }
+      return '#';
+
+    },
+
+
+     validateJob(job) {
+
+  if (!/^\d+$/.test(job.companyId)) {
+    throw Error("Invalid company ID");
+  }
+
+  if (!/^[a-zA-Z0-9\s.,\-()]{5,100}$/.test(job.title)) {
+    throw Error("Job title must be 5–100 valid characters");
+  }
+
+  if (!job.description || job.description.length < 20) {
+    throw Error("Description must be at least 20 characters");
+  }
+
+  if (!job.requirements || job.requirements.length < 10) {
+    throw Error("Requirements must be at least 10 characters");
+  }
+
+  if (!/^[a-zA-Z0-9\s,.-]{3,100}$/.test(job.location)) {
+    throw Error("Invalid location format");
+  }
+
+  const jobTypes = ['full-time', 'part-time', 'remote', 'contract'];
+  if (!jobTypes.includes(job.jobType)) {
+    throw Error("Invalid job type");
+  }
+
+  if (!Number.isInteger(job.salaryMin) || job.salaryMin < 0) {
+    throw Error("Invalid Salary");
+  }
+
+  if (!Number.isInteger(job.salaryMax) || job.salaryMax < job.salaryMin) {
+    throw Error("Invalid Salary");
+  }
+
+  return errors;
+},
     async loadJob() {
       try {
         const jobId = this.$route.params.id
@@ -202,6 +259,7 @@ export default {
       this.success = null
       
       try {
+        this.validateJob(this.job);
         const response = await this.$http.post('/api/applications', this.application)
         
         if (response.data.success) {

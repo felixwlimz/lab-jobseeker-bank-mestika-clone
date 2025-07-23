@@ -3,7 +3,8 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <!-- Vulnerable: XSS possible -->
-        <h2>Applications for: <span v-html="job ? job.title : 'Loading...'"></span></h2>
+        <!-- <h2>Applications for: <span v-html="job ? job.title : 'Loading...'"></span></h2> -->
+        <h2>Applications for: {{ job ? job.title : 'Loading...' }}</h2>
         <p class="text-muted" v-if="job">{{ applications.length }} applications received</p>
       </div>
       
@@ -33,10 +34,12 @@
             <div class="row">
               <div class="col-md-8">
                 <!-- Vulnerable: XSS possible -->
-                <h5 v-html="application.applicantName"></h5>
+                <!-- <h5 v-html="application.applicantName"></h5> -->
+                <h5>{{ application.applicantName }}</h5>
                 <p class="text-muted">
-                  Applied on {{ formatDate(application.appliedAt) }} • 
-                  <span v-html="application.applicantEmail"></span>
+                  Applied on {{ formatDate(application.appliedAt) }} 
+                  <!-- <span v-html="application.applicantEmail"></span> -->
+                  <span>{{ application.applicantEmail }}</span>
                 </p>
                 
                 <div class="mb-2">
@@ -51,12 +54,14 @@
                 <div v-if="application.coverLetter">
                   <h6>Cover Letter:</h6>
                   <!-- Vulnerable: XSS possible -->
-                  <p v-html="application.coverLetter"></p>
+                  <!-- <p v-html="application.coverLetter"></p> -->
+                  <p>{{application.coverLetter}}</p>
                 </div>
                 
                 <div v-if="application.applicantPhone">
                   <small class="text-muted">
-                    Phone: <span v-html="application.applicantPhone"></span>
+                    <!-- Phone: <span v-html="application.applicantPhone"></span> -->
+                    Phone: <span>{{ application.applicantPhone }}</span>
                   </small>
                 </div>
               </div>
@@ -66,7 +71,7 @@
                   <!-- Vulnerable: No authorization check -->
                   <button 
                     class="btn btn-success btn-sm" 
-                    @click="updateStatus(application.id, 'accepted')"
+                    @click="updateStatus(application.id)"
                     :disabled="application.status === 'accepted'"
                   >
                     Accept
@@ -74,7 +79,7 @@
                   
                   <button 
                     class="btn btn-danger btn-sm" 
-                    @click="updateStatus(application.id, 'rejected')"
+                    @click="updateStatus(application.id)"
                     :disabled="application.status === 'rejected'"
                   >
                     Reject
@@ -82,7 +87,7 @@
                   
                   <button 
                     class="btn btn-info btn-sm" 
-                    @click="updateStatus(application.id, 'reviewed')"
+                    @click="updateStatus(application.id)"
                     :disabled="application.status === 'reviewed'"
                   >
                     Mark as Reviewed
@@ -104,8 +109,10 @@
     </div>
     
     <!-- Vulnerable: Display messages without sanitization -->
-    <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div>
-    <div v-if="success" class="alert alert-success mt-3" v-html="success"></div>
+    <!-- <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div> -->
+    <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
+    <!-- <div v-if="success" class="alert alert-success mt-3" v-html="success"></div> -->
+    <div v-if="success" class="alert alert-success mt-3">{{success}}</div>
   </div>
 </template>
 
@@ -196,18 +203,41 @@ export default {
       }
     },
     
-    async updateStatus(applicationId, status) {
+    // async updateStatus(applicationId, status) {
+    //   try {
+    //     // Vulnerable: No authorization check
+    //     const response = await this.$http.put(`/api/applications/${applicationId}`, { status })
+        
+    //     if (response.data.success) {
+    //       this.success = `Application ${status} successfully!`
+          
+    //       // Update local status
+    //       const application = this.applications.find(app => app.id === applicationId)
+    //       if (application) {
+    //         application.status = status
+    //       }
+          
+    //       setTimeout(() => {
+    //         this.success = null
+    //       }, 3000)
+    //     } else {
+    //       this.error = response.data.message
+    //     }
+    //   } catch (error) {
+    //     this.error = 'Failed to update application status'
+    //   }
+    // },
+
+    async updateStatus(applicationId) {
       try {
         // Vulnerable: No authorization check
-        const response = await this.$http.put(`/api/applications/${applicationId}`, { status })
+        const response = await this.$http.post(`/api/applications/${applicationId}`)
         
         if (response.data.success) {
-          this.success = `Application ${status} successfully!`
-          
           // Update local status
           const application = this.applications.find(app => app.id === applicationId)
           if (application) {
-            application.status = status
+            application.status = response.data.status
           }
           
           setTimeout(() => {
@@ -221,9 +251,19 @@ export default {
       }
     },
     
-    viewProfile(userId) {
-      // Vulnerable: Direct access to any user profile
-      window.open(`/api/user/${userId}`, '_blank')
+    async viewProfile(userId) {
+      try {
+        // Vulnerable: Direct access to any user profile
+      const response = await this.$http.get(`/api/user/${userId}`)
+        
+        if (response.data.success) {
+          window.open(`/api/user/${userId}`, '_blank')
+        } else {
+          this.error = response.data.message
+        }
+      } catch (error) {
+        this.error = 'Failed to preview profile'
+      }
     },
     
     getStatusClass(status) {

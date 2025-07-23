@@ -5,25 +5,39 @@
         <div class="card">
           <div class="card-body text-center">
             <!-- Vulnerable: No validation for profile image -->
-            <img 
+            <!-- <img 
               :src="user.profileImage ? `/uploads/images/${user.profileImage}` : '/default-avatar.png'" 
               class="rounded-circle mb-3" 
               width="150" 
               height="150"
               alt="Profile"
+            > -->
+             <img 
+              :src="user.profileImage ? `/uploads/images/${encodeURIComponent(user.profileImage)}` : '/default-avatar.png'" 
+              class="rounded-circle mb-3" 
+              width="150" 
+              height="150"
+              alt="Profile"
             >
-            <h5 v-html="user.fullName || user.username"></h5>
+            <h5>{{ user.fullName || user.username }}</h5>
             <p class="text-muted">{{ user.role === 'company' ? 'Company' : 'Job Seeker' }}</p>
             
             <div class="mb-3">
               <label for="profileImage" class="form-label">Upload Profile Image</label>
               <!-- Vulnerable: No file type validation -->
+              <!-- <input 
+                type="file" 
+                class="form-control" 
+                id="profileImage" 
+                accept="*/*"
+                @change="uploadProfileImage"
+              > -->
               <input 
                 type="file" 
                 class="form-control" 
                 id="profileImage" 
+                accept=".jpg, .png, .jpeg"
                 @change="uploadProfileImage"
-                accept="*/*"
               >
             </div>
             
@@ -159,8 +173,8 @@
             </form>
             
             <!-- Vulnerable: Display messages without sanitization -->
-            <div v-if="error" class="alert alert-danger mt-3" v-html="error"></div>
-            <div v-if="success" class="alert alert-success mt-3" v-html="success"></div>
+            <div v-if="error" class="alert alert-danger mt-3">{{  error }}</div>
+            <div v-if="success" class="alert alert-success mt-3">{{ success }}</div>
           </div>
         </div>
         
@@ -272,12 +286,12 @@
               <div class="card-body p-3">
                 <div class="d-flex justify-content-between">
                   <div>
-                    <h6 class="mb-1" v-html="edu.institution"></h6>
-                    <p class="mb-1 text-muted" v-html="edu.degree + (edu.fieldOfStudy ? ' - ' + edu.fieldOfStudy : '')"></p>
+                    <h6 class="mb-1">{{ edu.institution }}</h6>
+                    <p class="mb-1 text-muted">{{ edu.degree + (edu.fieldOfStudy ? ' - ' + edu.fieldOfStudy : '') }}</p>
                     <small class="text-muted">
                       {{ formatDate(edu.startDate) }} - {{ edu.endDate ? formatDate(edu.endDate) : 'Present' }}
                     </small>
-                    <p class="mt-2 mb-0" v-if="edu.description" v-html="edu.description"></p>
+                    <p class="mt-2 mb-0" v-if="edu.description">{{ edu.description }}</p>
                   </div>
                   <button 
                     class="btn btn-sm btn-outline-danger" 
@@ -349,12 +363,12 @@
               <div class="card-body p-3">
                 <div class="d-flex justify-content-between">
                   <div>
-                    <h6 class="mb-1" v-html="exp.position"></h6>
-                    <p class="mb-1 text-muted" v-html="exp.company"></p>
+                    <h6 class="mb-1">{{ exp.position }}</h6>
+                    <p class="mb-1 text-muted" >{{ exp.company }}</p>
                     <small class="text-muted">
                       {{ formatDate(exp.startDate) }} - {{ exp.endDate ? formatDate(exp.endDate) : 'Present' }}
                     </small>
-                    <p class="mt-2 mb-0" v-if="exp.description" v-html="exp.description"></p>
+                    <p class="mt-2 mb-0" v-if="exp.description">{{ exp.description }}</p>
                   </div>
                   <button 
                     class="btn btn-sm btn-outline-danger" 
@@ -406,7 +420,7 @@ export default {
     }
   },
   async created() {
-    await this.loadProfile()
+    // await this.loadProfile()
     if (this.user.role === 'member') {
       await this.loadSkills()
       await this.loadEducation()
@@ -414,6 +428,40 @@ export default {
     }
   },
   methods: {
+
+     validate(credentials){
+      const regex = {
+         username: /^[a-zA-Z][a-zA-Z0-9._]{2,15}$/,
+          email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+         fullName: /^[a-zA-Z\s'-]{2,50}$/,
+         phone: /^\+?[0-9]{10,15}$/,
+        address: /^[a-zA-Z0-9\s,.'-]{5,100}$/, // basic: any characters, min 5
+      };
+ 
+
+       if(!regex.username.test(credentials.username)){
+          throw Error('Invalid Username')
+       }
+
+       if(!regex.email.test(credentials.email)){
+          throw Error('Invalid email')
+       }
+
+       if(!regex.fullName.test(credentials.password)){
+          throw Error('Invalid Name')
+       }
+
+       if(!regex.phone.test(credentials.phone)){
+         throw Error('Invalid Phone')
+       }
+
+       if(!regex.address.test(credentials.address)){
+         throw Error('Invalid Address')
+       }
+
+
+    },
+
     async loadProfile() {
       try {
         const response = await this.$http.get('/api/auth/profile')
@@ -444,6 +492,8 @@ export default {
       this.success = null
       
       try {
+      
+        this.validate(this.user);
         const response = await this.$http.put('/api/user/profile', this.user)
         
         if (response.data.success) {
@@ -462,10 +512,27 @@ export default {
         this.loading = false
       }
     },
+
+  
     
     async uploadProfileImage(event) {
       const file = event.target.files[0]
       if (!file) return
+      const maxSize = 2 * 1024 * 1024;
+      const allowedFiles = ['image/png', 'image/jpeg', 'image/jpg'];
+
+      if (file.size > maxSize) {
+        this.error = 'File terlalu besar, maksimal 2MB.'
+        event.target.value = '' // reset input
+        return
+      }
+
+      if (!allowedFiles.includes(file.type)) {
+        this.error = 'Tipe file tidak diperbolehkan.'
+        event.target.value = '' // reset input
+        return
+      }
+    
       
       const formData = new FormData()
       formData.append('file', file)
