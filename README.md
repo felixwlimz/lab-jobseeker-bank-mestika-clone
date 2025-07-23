@@ -133,14 +133,6 @@ cd job-search-vulnerable-app
 docker-compose up --build
 ```
 
-3. Access the applications:
-- **Frontend**: http://localhost:8003
-- **Backend API**: http://localhost:8083
-- **phpMyAdmin**: http://localhost:9003
-  - Server: mysql
-  - Username: root
-  - Password: rootpassword
-
 ### Running the Application
 
 To start the application:
@@ -163,11 +155,15 @@ To view logs:
 docker-compose logs -f
 ```
 
-### Port Configuration
-- **Frontend (Vue.js)**: Port 8003
-- **Backend (Spring Boot)**: Port 8083  
-- **Database (MySQL)**: Port 3307 (mapped from container port 3306)
-- **phpMyAdmin**: Port 9003
+### Access Information
+
+- **Frontend (Vue.js)**: http://localhost:8003
+- **Backend API**: http://localhost:8083
+- **Database (MySQL)**: localhost:3307
+- **phpMyAdmin**: http://localhost:9003
+  - Server: mysql
+  - Username: root
+  - Password: rootpassword
 
 ### Default Credentials
 
